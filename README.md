@@ -25,7 +25,7 @@ Go to the "Vrsammligsplatz". Set the target and your troops and press "Agriffe".
 
 ``Important``
 
-``Currently attacks that will arrive on the next day, will not work!``
+``Attacks that will arrive exactly at midnight, might not work!``
 
 ``The later you start the attack timer, the more accurate it will be!``
 
