@@ -25,11 +25,11 @@ Go to the "Vrsammligsplatz". Set the target and your troops and press "Agriffe".
 
 ``Important``
 
-``Attacks that will arrive exactly at midnight, might not work!``
+``You need to keep the page open, aswell as in the foreground, else there will be unexpected delay! To execute multiple attacks at the same time, use multiple windows.``
 
 ``The later you start the attack timer, the more accurate it will be!``
 
-
+``Attacks that will arrive exactly at midnight, might not work!``
 
 **Procedure**
 
