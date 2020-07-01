@@ -18,6 +18,7 @@ For the best performance change your Windows Timeserver to *pool.ntp.org*. (Cont
 **Time Offset**
 
 The Time Offset can be set on the 16th line of the script. The Time Offset is given in ms.
+The Server Lag is evaluated using a GET request. The URL is normally set to "https://ch53.staemme.ch/game.php". Depending on the world you play it needs to be adjusted on Line 30.
 
 **Attacking**
 
@@ -35,6 +36,7 @@ Go to the "Vrsammligsplatz". Set the target and your troops and press "Agriffe".
 
 Before sending an attack you should do the following:
 
+(0. Make sure the GET URL is valid [Code Line 30])
 1. Update the time from the time server (Control Panel -> Clock and Region -> Date and Time -> Internet Time -> Change settings.. -> Update now)
 2. Set the Time Offset (Send an attack subtract the time difference from the time_offset variable, repeat multiple time)
 3. Enjoy ;)
