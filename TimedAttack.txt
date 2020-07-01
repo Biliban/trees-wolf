@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                Timed-Attack
 // @author              Biliban Tierli
-// @version             1.0
+// @version             2.0
 // @namespace           staemme.ch
 // @description         Gibt die Option für einen Automatisierten, getimeten Angriff
 // @include             https://*.staemme.ch/game.php?*village=*&screen=place&try=confirm
@@ -12,14 +12,36 @@ var win = typeof unsafeWindow != 'undefined' ? unsafeWindow : window;
 var $ = typeof unsafeWindow != 'undefined' ? unsafeWindow.$ : window.$;
 //var game_data = typeof unsafeWindow != 'undefined' ? unsafeWindow.game_data : window.game_data;
 
-// Variable to define the Lag of the Request
-var lag = 29;
+// Variable to define the Timeoffset to the Server
+var time_offset = 56;
 
 // Flag to mitigate double activation
 var active = false;
 
 // Submits the Form to trigger the attack ------------------------------------------------------------------------------
-function submit() {
+function submit(attack_time) {
+
+    var startTime = (new Date()).getTime();
+    var lag;
+
+    // Get the ResponseTime of the Server ----------
+    $.ajax({
+    type:'GET',
+    url: 'https://ch53.staemme.ch/game.php',
+    async: false,
+    success : function() {
+        // Divide by 2 to account for both ways
+        lag = ((new Date()).getTime() - (new Date()).getTime())/2;
+    }
+    });
+    // ---------------------------------------------
+
+    // Wait for the exact Millisecond
+    while((new Date()).getTime() + lag < attack_time.getTime())
+    {
+    }
+
+    // Send the Request
     document.getElementById("command-data-form").requestSubmit();
 };
 // ---------------------------------------------------------------------------------------------------------------------
@@ -84,10 +106,10 @@ function onSubmitAttackOnTime() {
         }
         let duration = extractDuration();
 
-        // ### This is the crucial part and should be keep as quick as possible ########################
+        // Calculate the delay to the sumbit #########################################################
         let time_now = new Date();
 
-        let delay_until_submit = attack_time.getTime() - time_now.getTime() - duration - lag;
+        let delay_until_submit = attack_time.getTime() - time_now.getTime() - duration - time_offset;
 
         if(delay_until_submit < 0)
         {
@@ -97,86 +119,14 @@ function onSubmitAttackOnTime() {
             return;
         }
 
-        // Start the Wait for the Submit
-        setTimeout(submit, delay_until_submit);
+        // Start the Wait for the Submit (Subtract 1 Second for the Timeout)
+        setTimeout(function() {submit(new Date(time_now.getTime() + delay_until_submit))}, delay_until_submit-1000);
         // #############################################################################################
 
         console.log("Current Time:   " + dateToString(time_now));
         console.log("Duration:       " + msToTime(duration));
         console.log("Attack Time:    " + dateToString(attack_time));
-        console.log("Lag:            " + msToTime(lag));
-        console.log("Waiting:        " + msToTime(delay_until_submit));
-        console.log("Sending Attack: " + dateToString(new Date(time_now.getTime() + delay_until_submit)));
-    }
-    else
-    {
-        console.log("Already started");
-    }
-}
-
-function onSubmitReturnOnTime() {
-    if(active == false)
-    {
-        active = true;
-        document.querySelector('#submit-return-ontime').style.color = "red";
-
-        // Get Current Time to save the Date
-        var return_time = new Date();
-        // Clear old Time Data
-        return_time.setHours(0);
-        return_time.setMinutes(0);
-        return_time.setSeconds(0);
-        return_time.setMilliseconds(0);
-        // Add the Milliseconds from the Time Selector (add 500ms to Return because the return is always at 000ms)
-        return_time.setMilliseconds(document.getElementById("return-time").valueAsNumber + 500);
-
-        // Check if the time is valid
-        if(isNaN(return_time.getTime()))
-        {
-            console.log("Invalid Date");
-            active = false;
-            document.querySelector('#submit-attack-ontime').style.color = "green";
-            return;
-        }
-        // Check if the time is the next day
-        if(return_time < new Date())
-        {
-            if(confirm("Is the return time on the next day?"))
-            {
-                return_time.setMilliseconds(return_time.getMilliseconds() + 86400000);
-            }
-            else
-            {
-                console.log("The User canceled the attack");
-                active = false;
-                document.querySelector('#submit-attack-ontime').style.color = "green";
-                return;
-            }
-        }
-
-        let duration = extractDuration();
-
-        // ### This is the crucial part and should be keep as quick as possible ########################
-        let time_now = new Date();
-
-        let delay_until_submit = return_time.getTime() - time_now.getTime() - 2*duration - lag;
-
-        if(delay_until_submit < 0)
-        {
-            console.log("You are to late to send this attack");
-            active = false;
-            document.querySelector('#submit-return-ontime').style.color = "green";
-            return;
-        }
-
-        // Start the Wait for the Submit
-        setTimeout(submit, delay_until_submit);
-        // #############################################################################################
-
-        console.log("Current Time:   " + dateToString(time_now));
-        console.log("Duration:       " + msToTime(duration));
-        console.log("Return Time:    " + dateToString(return_time));
-        console.log("Lag:            " + msToTime(lag));
+        console.log("Time Offset:    " + msToTime(time_offset));
         console.log("Waiting:        " + msToTime(delay_until_submit));
         console.log("Sending Attack: " + dateToString(new Date(time_now.getTime() + delay_until_submit)));
     }
@@ -216,8 +166,5 @@ function dateToString(date) {
 // --------------------------------------------------------------------------------------------
 
 $('#command-data-form table.vis tbody:first').append('<tr><td>Ankunft:</td><td><input id="attack-time" type="time" step="0.001"></input></td></tr>');
-$('#command-data-form table.vis tbody:first').append('<tr><td>Rückkehr:</td><td><input id="return-time" type="time" step="1"></input></td></tr>');
 $('#command-data-form').append('<input id="submit-attack-ontime" style="margin-bottom: 5px; color: green;" class="troop_confirm_go btn btn-attack" name="submit" type="button" onload="this.disabled=false;" value="Agriff uf Akunfts Zit schickä">');
-$('#command-data-form').append('<input id="submit-return-ontime" style="margin-bottom: 5px; color: green;" class="troop_confirm_go btn btn-attack" name="submit" type="button" onload="this.disabled=false;" value="Agriff uf Rückkehr Zit schickä">');
 document.getElementById("submit-attack-ontime").addEventListener("click", onSubmitAttackOnTime);
-document.getElementById("submit-return-ontime").addEventListener("click", onSubmitReturnOnTime);
